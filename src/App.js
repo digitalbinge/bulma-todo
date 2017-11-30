@@ -3,19 +3,13 @@ import { Input, Button, Panel } from 'reactbulma';
 import './App.css';
 import Header from './components/Header';
 import Task from './components/Task';
+import axios from 'axios';
 
-let currentId = 50;
-
-const genId = () => currentId++;
 
 class App extends Component {
 
   state = {
-    tasks: [
-      { id: 1, name: 'Do the washing', date: '29/11/2017, 12:34:12', complete: true },
-      { id: 2, name: 'Do the fadsfsd', date: '29/11/2017, 13:45:23', complete: false },
-      { id: 3, name: 'Do the washdfggdfd', date: '29/11/2017, 14:58:44', complete: false }
-    ],
+    tasks: [],
     searchPhrase: ''
   }
 
@@ -42,27 +36,40 @@ class App extends Component {
       alert('Task must not be blank');
       return;
     }
-    // Make a copy of the current tasks
-    const newTasks = [...this.state.tasks];
 
-    // Add the new task to our copy of tasks
-    newTasks.unshift({
-      id: genId(),
-      name: this.state.searchPhrase,
-      date: new Date()
-    });
 
-    // Update the state with the new tasks
-    // Reset the search phrase to an empty string
-    this.setState({
-      tasks: newTasks,
-      searchPhrase: ''
-    });
+    axios.post('/api/tasks', {
+      name: this.state.searchPhrase
+    })
+      .then((response) => {
+        console.log(response);
+        this.setState(prevState => ({
+          tasks: [...prevState.tasks, response.data],
+          searchPhrase: ''
+        }));
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
   }
 
+  deleteTask = (id) => {
+    axios.delete(`/api/tasks/${id}`)
+      .then((response) => {
+        console.log('response')
+        const foundIndex = this.state.tasks.findIndex(task => task._id === id)
+        console.log(foundIndex)
+        this.setState(prevState => {
+          const newTasks = [...prevState.tasks]
+          newTasks.splice(foundIndex, 1)
+          return { tasks: newTasks }
+        });
+      });
+  }
+
   onToggleComplete = (id) => {
-    const foundToDoIndex = this.state.tasks.findIndex(task => task.id === id)
+    const foundToDoIndex = this.state.tasks.findIndex(task => task._id === id)
     this.setState(prevState => {
       const tasks = prevState.tasks
       tasks[foundToDoIndex].complete = !tasks[foundToDoIndex].complete
@@ -73,7 +80,7 @@ class App extends Component {
 
   render() {
     const { tasks, searchPhrase } = this.state 
-    const filteredTasks = tasks.filter(myTask => myTask.name.includes(searchPhrase))
+    const filteredTasks = tasks.filter(myTask => myTask.name.includes(searchPhrase)).reverse()
 
     return (
       <div className="App">
@@ -94,13 +101,34 @@ class App extends Component {
           <Panel.Heading>
             ToDo
           </Panel.Heading>
-          {filteredTasks.map(todo => <Task key={todo.id} name={todo.name} date={todo.date} complete={todo.complete} onClick={() => this.onToggleComplete(todo.id)} /> )}
+          {filteredTasks.map(todo => <Task key={todo._id} name={todo.name} time={todo.time} complete={todo.complete} onDeleteClick={stopPropagation(() => this.deleteTask(todo._id))} onClick={() => this.onToggleComplete(todo._id)} /> )}
 
         </Panel>
 
       </div>
     );
   }
+
+  componentDidMount() {
+    axios.get('/api/tasks')
+      .then((response) => {
+
+        console.log(response.data);
+        this.setState({
+          tasks: response.data
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 }
+
+const stopPropagation = (fn) => (event) => {
+  event.stopPropagation();
+  if (fn) {
+    fn(event);
+  }
+};
 
 export default App;

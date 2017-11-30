@@ -1,11 +1,10 @@
 import React from 'react';
-import { Panel } from 'reactbulma';
+import { Panel, Button } from 'reactbulma';
 
-const Task = ({ id, name, date, complete, onClick }) => (
+const Task = ({ id, name, time, complete, onClick, onDeleteClick }) => (
 	<Panel.Block label onClick={onClick} className={(complete) ? 'item-complete' : ''}>
-		<p>{name} | {date.toLocaleString()} {(complete) ? '✌️' : ''}</p>
+		<p>{name} | {(new Date(time)).toLocaleString()} {(complete) ? '✌️' : ''} <Button onClick={onDeleteClick}>Button</Button></p>
 	</Panel.Block>
 )
-
 
 export default Task;

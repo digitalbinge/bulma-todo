@@ -3,7 +3,8 @@ import { Progress, Level, Heading, Title } from 'reactbulma';
 
 const Header = ({ totalIncomplete, totalComplete, title }) => (
 	<div>
-		<Progress value={totalComplete / (totalIncomplete + totalComplete) * 100} max="100"></Progress>
+	{console.log((totalComplete / (totalIncomplete + totalComplete) * 100) || 0)}
+		<Progress value={(totalComplete / (totalIncomplete + totalComplete) * 100) || 0} max="100"></Progress>
 		<Level>
 		  <Level.Item hasTextCentered>
 		    <div>
@@ -21,5 +22,6 @@ const Header = ({ totalIncomplete, totalComplete, title }) => (
 		</Level>
 	</div>
 )
+
 
 export default Header;
